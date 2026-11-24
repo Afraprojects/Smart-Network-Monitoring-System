@@ -112,3 +112,17 @@ To develop a simple network monitoring solution that helps users observe device 
 ---
 
 **Developed as a practical learning project using Python and web technologies.**
+
+## Dashboard Screenshots
+
+### Main Dashboard
+![Main Dashboard](dashboard.png/Screenshot%202026-11-24%20125340.png)
+
+### Network Performance
+![Network Performance](dashboard.png/Screenshot%202026-11-24%20125441.png)
+
+### Network Topology
+![Network Topology](dashboard.png/Screenshot%202026-11-24%20125508.png)
+
+### Network Alerts
+![Network Alerts](dashboard.png/Screenshot%202026-11-24%20125524.png)
