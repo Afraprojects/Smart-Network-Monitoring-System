@@ -1,0 +1,1074 @@
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="refresh" content="10">
+
+    <title>Smart Network Monitor</title>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background:
+                radial-gradient(circle at top left, #123b63, transparent 40%),
+                linear-gradient(135deg, #050b18, #101b35, #07101f);
+            color: #e2e8f0;
+            padding: 30px;
+            perspective: 1200px;
+        }
+
+        /* HEADER */
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-bottom: 35px;
+        }
+
+        .header h1 {
+            color: white;
+            font-size: 30px;
+            text-shadow: 0 0 15px #38bdf8;
+        }
+
+        .subtitle {
+            color: #94a3b8;
+            margin-top: 10px;
+        }
+
+        .live-status {
+            background: rgba(0, 255, 150, 0.12);
+            border: 1px solid #00ff99;
+            color: #00ff99;
+            padding: 12px 20px;
+            border-radius: 30px;
+            box-shadow: 0 0 18px rgba(0, 255, 153, 0.3);
+            animation: glow 2s infinite alternate;
+        }
+
+        @keyframes glow {
+            from {
+                box-shadow: 0 0 8px rgba(0,255,153,0.2);
+            }
+
+            to {
+                box-shadow: 0 0 22px rgba(0,255,153,0.6);
+            }
+        }
+
+        /* STATISTICS CARDS */
+
+        .cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+            gap: 25px;
+            margin-bottom: 40px;
+            perspective: 1000px;
+        }
+
+        .card {
+            background: linear-gradient(145deg, #1c3150, #101c32);
+            padding: 25px;
+            border-radius: 18px;
+            border: 1px solid rgba(96, 165, 250, 0.35);
+
+            box-shadow:
+                8px 8px 20px rgba(0,0,0,0.5),
+                -4px -4px 15px rgba(96,165,250,0.08),
+                inset 0 1px 1px rgba(255,255,255,0.1);
+
+            transform: translateZ(15px);
+            transition: all 0.35s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-10px) rotateX(5deg) rotateY(-3deg);
+
+            box-shadow:
+                12px 20px 35px rgba(0,0,0,0.6),
+                0 0 25px rgba(56,189,248,0.25);
+        }
+
+        .card h3 {
+            color: #a5b4fc;
+            font-size: 14px;
+            margin-bottom: 16px;
+        }
+
+        .card h2 {
+            color: white;
+            font-size: 30px;
+            text-shadow: 0 0 12px rgba(56,189,248,0.5);
+        }
+
+        .card-icon {
+            font-size: 26px;
+            margin-bottom: 15px;
+        }
+
+        .blue {
+            border-bottom: 4px solid #3b82f6;
+        }
+
+        .green {
+            border-bottom: 4px solid #22c55e;
+        }
+
+        .red {
+            border-bottom: 4px solid #ef4444;
+        }
+
+        .purple {
+            border-bottom: 4px solid #a78bfa;
+        }
+
+        .orange {
+            border-bottom: 4px solid #f59e0b;
+        }
+
+        /* CONTENT PANELS */
+
+        .section {
+            background: linear-gradient(145deg, #192b47, #0d192d);
+            padding: 28px;
+            border-radius: 18px;
+            margin-bottom: 32px;
+            border: 1px solid rgba(96,165,250,0.3);
+
+            box-shadow:
+                10px 12px 30px rgba(0,0,0,0.45),
+                inset 0 1px 2px rgba(255,255,255,0.08);
+
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .section:hover {
+            transform: translateY(-4px);
+
+            box-shadow:
+                12px 18px 35px rgba(0,0,0,0.55),
+                0 0 18px rgba(56,189,248,0.12);
+        }
+
+        .section h2 {
+            color: #7dd3fc;
+            font-size: 21px;
+            margin-bottom: 22px;
+            text-shadow: 0 0 10px rgba(56,189,248,0.3);
+        }
+
+        /* TABLES */
+
+        .table-container {
+            width: 100%;
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 650px;
+        }
+
+        th {
+            background: linear-gradient(135deg, #164e80, #1e3a8a);
+            color: white;
+            padding: 16px;
+            font-size: 13px;
+        }
+
+        td {
+            padding: 15px;
+            text-align: center;
+            border-bottom: 1px solid rgba(148,163,184,0.15);
+            color: #cbd5e1;
+            font-size: 13px;
+        }
+
+        tr:hover td {
+            background: rgba(56,189,248,0.09);
+        }
+
+        /* DEVICE STATUS */
+
+        .online {
+            color: #4ade80;
+            background: rgba(34,197,94,0.12);
+            padding: 7px 13px;
+            border-radius: 20px;
+            font-weight: bold;
+            box-shadow: 0 0 10px rgba(34,197,94,0.2);
+        }
+
+        .offline {
+            color: #f87171;
+            background: rgba(239,68,68,0.15);
+            padding: 7px 13px;
+            border-radius: 20px;
+            font-weight: bold;
+            box-shadow: 0 0 10px rgba(239,68,68,0.2);
+        }
+
+        .alert-offline {
+            color: #f87171;
+            font-weight: bold;
+        }
+
+        .alert-recovered {
+            color: #4ade80;
+            font-weight: bold;
+        }
+
+        .no-alert {
+            color: #94a3b8;
+            padding: 20px;
+        }
+
+        /* NETWORK PERFORMANCE ANALYSIS */
+
+        .analysis-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 25px;
+        }
+
+        .analysis-card {
+            background: linear-gradient(145deg, #203957, #0c192c);
+            border: 1px solid rgba(56,189,248,0.3);
+            border-radius: 16px;
+            padding: 25px;
+
+            box-shadow: 8px 10px 20px rgba(0,0,0,0.4);
+            transition: 0.3s;
+        }
+
+        .analysis-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 0 22px rgba(56,189,248,0.25);
+        }
+
+        .analysis-card h3 {
+            color: #a5b4fc;
+            font-size: 14px;
+            margin-bottom: 15px;
+        }
+
+        .analysis-card h2 {
+            color: white;
+            font-size: 23px;
+            overflow-wrap: anywhere;
+        }
+
+        .analysis-card p {
+            color: #94a3b8;
+            font-size: 13px;
+            margin-top: 10px;
+        }
+
+        /* 3D NETWORK TOPOLOGY */
+
+        .topology {
+            background: linear-gradient(145deg, #192b47, #071426);
+            border: 1px solid rgba(56,189,248,0.35);
+            border-radius: 20px;
+            padding: 35px 20px;
+            margin-bottom: 32px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.5);
+            text-align: center;
+        }
+
+        .topology h2 {
+            color: #7dd3fc;
+            margin-bottom: 35px;
+            font-size: 21px;
+        }
+
+        .network-hub {
+            display: inline-block;
+            padding: 22px 35px;
+            border-radius: 18px;
+            background: linear-gradient(145deg, #164e80, #0f2442);
+            border: 2px solid #38bdf8;
+            color: white;
+            font-size: 18px;
+            font-weight: bold;
+            box-shadow: 0 0 25px rgba(56,189,248,0.5);
+            transform: perspective(500px) rotateX(8deg);
+        }
+
+        .hub-subtitle {
+            font-size: 12px;
+            color: #bae6fd;
+            margin-top: 8px;
+        }
+
+        .connection-line {
+            width: 2px;
+            height: 55px;
+            margin: auto;
+            background: linear-gradient(#38bdf8, #22c55e);
+            box-shadow: 0 0 12px #38bdf8;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .connection-line::after {
+            content: "";
+            position: absolute;
+            width: 100%;
+            height: 20px;
+            background: white;
+            box-shadow: 0 0 12px white;
+            animation: dataFlow 1.5s linear infinite;
+        }
+
+        @keyframes dataFlow {
+            from {
+                top: -20px;
+            }
+
+            to {
+                top: 60px;
+            }
+        }
+
+        .device-nodes {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 20px;
+            max-width: 950px;
+            margin: auto;
+        }
+
+        .device-node {
+            padding: 25px 12px;
+            border-radius: 16px;
+            background: linear-gradient(145deg, #203957, #0c192c);
+            border: 1px solid rgba(56,189,248,0.3);
+            box-shadow: 8px 10px 20px rgba(0,0,0,0.5);
+            transition: 0.3s;
+        }
+
+        .device-node:hover {
+            transform: translateY(-8px) scale(1.03);
+            box-shadow: 0 0 22px rgba(56,189,248,0.3);
+        }
+
+        .device-node h3 {
+            color: #e0f2fe;
+            margin: 12px 0;
+            font-size: 15px;
+        }
+
+        .device-node p {
+            color: #94a3b8;
+            font-size: 12px;
+            overflow-wrap: anywhere;
+        }
+
+        .node-indicator {
+            display: inline-block;
+            width: 13px;
+            height: 13px;
+            border-radius: 50%;
+            margin-bottom: 8px;
+        }
+
+        .node-online {
+            background: #22c55e;
+            box-shadow: 0 0 15px #22c55e;
+            animation: pulse 1.5s infinite;
+        }
+
+        .node-offline {
+            background: #ef4444;
+            box-shadow: 0 0 15px #ef4444;
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                box-shadow: 0 0 5px #22c55e;
+            }
+
+            50% {
+                box-shadow: 0 0 20px #22c55e;
+            }
+        }
+
+        /* CHARTS */
+
+        .chart-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 25px;
+        }
+
+        .chart-container {
+            height: 300px;
+            position: relative;
+            padding: 12px;
+            background: rgba(5,15,35,0.4);
+            border-radius: 12px;
+            box-shadow: inset 0 0 20px rgba(0,0,0,0.3);
+        }
+
+        /* FOOTER */
+
+        .footer {
+            text-align: center;
+            color: #64748b;
+            font-size: 13px;
+            padding: 25px;
+        }
+
+        /* RESPONSIVE DESIGN */
+
+        @media (max-width: 800px) {
+            .chart-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 650px) {
+            .device-nodes {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 600px) {
+            body {
+                padding: 15px;
+            }
+
+            .header h1 {
+                font-size: 22px;
+            }
+
+            .section {
+                padding: 16px;
+            }
+        }
+
+    </style>
+</head>
+
+<body>
+
+    <!-- HEADER -->
+
+    <div class="header">
+
+        <div>
+            <h1>🌐 Smart Network Monitor</h1>
+
+            <p class="subtitle">
+                Real-Time Network Monitoring and Fault Detection System
+            </p>
+        </div>
+
+        <div class="live-status">
+            ● LIVE MONITORING
+        </div>
+
+    </div>
+
+
+    <!-- STATISTICS CARDS -->
+
+    <div class="cards">
+
+        <div class="card blue">
+            <div class="card-icon">🖥️</div>
+            <h3>Total Devices</h3>
+            <h2>{{ total }}</h2>
+        </div>
+
+        <div class="card green">
+            <div class="card-icon">🟢</div>
+            <h3>Online Devices</h3>
+            <h2>{{ online }}</h2>
+        </div>
+
+        <div class="card red">
+            <div class="card-icon">🔴</div>
+            <h3>Offline Devices</h3>
+            <h2>{{ offline }}</h2>
+        </div>
+
+        <div class="card purple">
+            <div class="card-icon">⚡</div>
+            <h3>Average Latency</h3>
+            <h2>{{ average_latency }} ms</h2>
+        </div>
+
+        <div class="card orange">
+            <div class="card-icon">📡</div>
+            <h3>Average Packet Loss</h3>
+            <h2>{{ average_packet_loss }}%</h2>
+        </div>
+
+    </div>
+
+
+    <!-- NETWORK PERFORMANCE ANALYSIS -->
+
+    <div class="section">
+
+        <h2>📈 Network Performance Analysis</h2>
+
+        <div class="analysis-grid">
+
+            <div class="analysis-card">
+
+                <h3>⚡ Highest Latency Device</h3>
+
+                {% if highest_latency_device %}
+
+                    <h2>{{ highest_latency_device["device_name"] }}</h2>
+
+                    <p>
+                        Latency:
+                        {{ highest_latency_device["latency"] }} ms
+                    </p>
+
+                {% else %}
+
+                    <h2>Not Available</h2>
+                    <p>No latency data available</p>
+
+                {% endif %}
+
+            </div>
+
+
+            <div class="analysis-card">
+
+                <h3>📡 Highest Packet Loss</h3>
+
+                {% if highest_loss_device %}
+
+                    <h2>{{ highest_loss_device["device_name"] }}</h2>
+
+                    <p>
+                        Packet Loss:
+                        {{ highest_loss_device["packet_loss"] }}%
+                    </p>
+
+                {% else %}
+
+                    <h2>Not Available</h2>
+                    <p>No packet loss data available</p>
+
+                {% endif %}
+
+            </div>
+
+
+            <div class="analysis-card">
+
+                <h3>💚 Overall Network Health</h3>
+
+                <h2>{{ network_health }}%</h2>
+
+                <p>
+                    Health Status:
+                    <strong>{{ health_status }}</strong>
+                </p>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- DEVICE STATUS -->
+
+    <div class="section">
+
+        <h2>📊 Device Status</h2>
+
+        <div class="table-container">
+
+            <table>
+
+                <thead>
+                    <tr>
+                        <th>Device</th>
+                        <th>IP Address</th>
+                        <th>Status</th>
+                        <th>Latency</th>
+                        <th>Last Checked</th>
+                        <th>Packets Sent</th>
+                        <th>Packets Received</th>
+                        <th>Packet Loss (%)</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+
+                    {% for device in devices %}
+
+                    <tr>
+                        <td>{{ device["device_name"] }}</td>
+                        <td>{{ device["ip_address"] }}</td>
+
+                        <td>
+                            {% if device["status"] == "ONLINE" %}
+                                <span class="online">ONLINE</span>
+                            {% else %}
+                                <span class="offline">OFFLINE</span>
+                            {% endif %}
+                        </td>
+
+                        <td>
+                            {% if device["latency"] is not none %}
+                                {{ device["latency"] }} ms
+                            {% else %}
+                                No response
+                            {% endif %}
+                        </td>
+
+                        <td>{{ device["timestamp"] }}</td>
+                        <td>{{ device["packets_sent"] }}</td>
+                        <td>{{ device["packets_received"] }}</td>
+                        <td>{{ device["packet_loss"] }}%</td>
+
+                    </tr>
+
+                    {% else %}
+
+                    <tr>
+                        <td colspan="8">No monitoring data available.</td>
+                    </tr>
+
+                    {% endfor %}
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </div>
+
+
+    <!-- 3D NETWORK TOPOLOGY -->
+
+    <div class="topology">
+
+        <h2>🌐 Live Network Topology</h2>
+
+        <div class="network-hub">
+            🖧 NETWORK HUB
+
+            <p class="hub-subtitle">
+                Monitoring Center
+            </p>
+        </div>
+
+        <div class="connection-line"></div>
+
+        <div class="device-nodes">
+
+            {% for device in devices %}
+
+            <div class="device-node">
+
+                {% if device["status"] == "ONLINE" %}
+                    <span class="node-indicator node-online"></span>
+                {% else %}
+                    <span class="node-indicator node-offline"></span>
+                {% endif %}
+
+                <h3>🖥️ {{ device["device_name"] }}</h3>
+
+                <p>IP: {{ device["ip_address"] }}</p>
+
+                <p style="margin-top:10px;">
+                    Status:
+
+                    {% if device["status"] == "ONLINE" %}
+                        <span style="color:#4ade80;">ONLINE</span>
+                    {% else %}
+                        <span style="color:#f87171;">OFFLINE</span>
+                    {% endif %}
+
+                </p>
+
+            </div>
+
+            {% else %}
+
+            <p>No devices available for topology.</p>
+
+            {% endfor %}
+
+        </div>
+
+    </div>
+
+
+    <!-- NETWORK FAULT ALERTS -->
+
+    <div class="section">
+
+        <h2>🚨 Network Fault Alerts</h2>
+
+        <div class="table-container">
+
+            <table>
+
+                <thead>
+                    <tr>
+                        <th>Device</th>
+                        <th>IP Address</th>
+                        <th>Alert Type</th>
+                        <th>Message</th>
+                        <th>Timestamp</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+
+                    {% for alert in alerts %}
+
+                    <tr>
+
+                        <td>{{ alert["device_name"] }}</td>
+                        <td>{{ alert["ip_address"] }}</td>
+
+                        <td>
+                            {% if alert["alert_type"] == "OFFLINE" %}
+                                <span class="alert-offline">OFFLINE</span>
+                            {% else %}
+                                <span class="alert-recovered">RECOVERED</span>
+                            {% endif %}
+                        </td>
+
+                        <td>{{ alert["message"] }}</td>
+                        <td>{{ alert["timestamp"] }}</td>
+
+                    </tr>
+
+                    {% else %}
+
+                    <tr>
+                        <td colspan="5" class="no-alert">
+                            No alerts recorded yet.
+                        </td>
+                    </tr>
+
+                    {% endfor %}
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </div>
+
+
+    <!-- NETWORK GRAPHS -->
+
+    <div class="chart-grid">
+
+        <div class="section">
+
+            <h2>⚡ Network Latency Graph</h2>
+
+            <div class="chart-container">
+                <canvas id="latencyChart"></canvas>
+            </div>
+
+        </div>
+
+        <div class="section">
+
+            <h2>📡 Packet Loss Graph</h2>
+
+            <div class="chart-container">
+                <canvas id="packetLossChart"></canvas>
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- MONITORING HISTORY -->
+
+    <div class="section">
+
+        <h2>🕒 Recent Monitoring History</h2>
+
+        <div class="table-container">
+
+            <table>
+
+                <thead>
+                    <tr>
+                        <th>Device</th>
+                        <th>Latency</th>
+                        <th>Packet Loss</th>
+                        <th>Timestamp</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+
+                    {% for record in history %}
+
+                    <tr>
+                        <td>{{ record["device_name"] }}</td>
+
+                        <td>
+                            {% if record["latency"] is not none %}
+                                {{ record["latency"] }} ms
+                            {% else %}
+                                No response
+                            {% endif %}
+                        </td>
+
+                        <td>{{ record["packet_loss"] }}%</td>
+                        <td>{{ record["timestamp"] }}</td>
+                    </tr>
+
+                    {% else %}
+
+                    <tr>
+                        <td colspan="4">No history available.</td>
+                    </tr>
+
+                    {% endfor %}
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </div>
+
+
+    <!-- FOOTER -->
+
+    <div class="footer">
+
+        Smart Network Monitoring and Fault Detection System
+
+        <br><br>
+
+        Developed using Python | Flask | SQLite | HTML | CSS | JavaScript
+
+    </div>
+
+
+    <!-- CHART.JS CONFIGURATION -->
+
+    <script>
+
+        const labels = {{ chart_labels | tojson }};
+        const latencyData = {{ chart_latencies | tojson }};
+        const packetLossData = {{ chart_packet_losses | tojson }};
+
+
+        // LATENCY GRAPH
+
+        new Chart(document.getElementById("latencyChart"), {
+
+            type: "line",
+
+            data: {
+
+                labels: labels,
+
+                datasets: [{
+
+                    label: "Latency (ms)",
+
+                    data: latencyData,
+
+                    borderColor: "#38bdf8",
+                    backgroundColor: "rgba(56,189,248,0.15)",
+
+                    borderWidth: 3,
+                    fill: true,
+                    tension: 0.4,
+
+                    pointBackgroundColor: "#7dd3fc",
+                    pointRadius: 4
+
+                }]
+
+            },
+
+            options: {
+
+                responsive: true,
+                maintainAspectRatio: false,
+
+                plugins: {
+
+                    legend: {
+                        labels: {
+                            color: "#e2e8f0"
+                        }
+                    }
+
+                },
+
+                scales: {
+
+                    x: {
+
+                        ticks: {
+                            color: "#94a3b8"
+                        },
+
+                        grid: {
+                            color: "rgba(148,163,184,0.1)"
+                        }
+
+                    },
+
+                    y: {
+
+                        beginAtZero: true,
+
+                        ticks: {
+                            color: "#94a3b8"
+                        },
+
+                        grid: {
+                            color: "rgba(148,163,184,0.1)"
+                        },
+
+                        title: {
+                            display: true,
+                            text: "Latency (ms)",
+                            color: "#94a3b8"
+                        }
+
+                    }
+
+                }
+
+            }
+
+        });
+
+
+        // PACKET LOSS GRAPH
+
+        new Chart(document.getElementById("packetLossChart"), {
+
+            type: "line",
+
+            data: {
+
+                labels: labels,
+
+                datasets: [{
+
+                    label: "Packet Loss (%)",
+
+                    data: packetLossData,
+
+                    borderColor: "#f59e0b",
+                    backgroundColor: "rgba(245,158,11,0.15)",
+
+                    borderWidth: 3,
+                    fill: true,
+                    tension: 0.4,
+
+                    pointBackgroundColor: "#fbbf24",
+                    pointRadius: 4
+
+                }]
+
+            },
+
+            options: {
+
+                responsive: true,
+                maintainAspectRatio: false,
+
+                plugins: {
+
+                    legend: {
+                        labels: {
+                            color: "#e2e8f0"
+                        }
+                    }
+
+                },
+
+                scales: {
+
+                    x: {
+
+                        ticks: {
+                            color: "#94a3b8"
+                        },
+
+                        grid: {
+                            color: "rgba(148,163,184,0.1)"
+                        }
+
+                    },
+
+                    y: {
+
+                        beginAtZero: true,
+                        max: 100,
+
+                        ticks: {
+                            color: "#94a3b8"
+                        },
+
+                        grid: {
+                            color: "rgba(148,163,184,0.1)"
+                        },
+
+                        title: {
+                            display: true,
+                            text: "Packet Loss (%)",
+                            color: "#94a3b8"
+                        }
+
+                    }
+
+                }
+
+            }
+
+        });
+
+    </script>
+
+</body>
+
+</html>
+
+
+
+
+
+
+

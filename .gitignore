@@ -1,0 +1,13 @@
+
+# Python virtual environment
+.venv/
+
+# Python cache files
+__pycache__/
+*.pyc
+
+# Local database
+monitoring_data.db
+
+# VS Code local settings
+.vscode/
