@@ -118,11 +118,11 @@ To develop a simple network monitoring solution that helps users observe device 
 ### Main Dashboard
 ![Main Dashboard](dashboard.png/Screenshot%202026-11-24%20125340.png)
 
-### Network Performance
+### Network Performance Analysis & Topology
 ![Network Performance](dashboard.png/Screenshot%202026-11-24%20125441.png)
 
-### Network Topology
+### Network Fault Alerts
 ![Network Topology](dashboard.png/Screenshot%202026-11-24%20125508.png)
 
-### Network Alerts
+### Recent Monitoring History
 ![Network Alerts](dashboard.png/Screenshot%202026-11-24%20125524.png)
